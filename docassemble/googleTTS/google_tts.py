@@ -27,5 +27,3 @@ def get_text_to_speech(text_to_synthesize, voice, speaking_rate, pitch):
   )
   
   return response.audio_content
-  
-  mark_task_as_performed('get_text_to_speech')
