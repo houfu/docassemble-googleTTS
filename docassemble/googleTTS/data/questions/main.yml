@@ -1,0 +1,116 @@
+metadata:
+  title: |
+    Google TTS Interview
+  short title: |
+    Have Google read your text
+  description: |
+    This interview produces a sound file based 
+    on the text input by the user and other options.
+  revision_date: 2022-04-27
+---
+modules:
+  - .google_tts
+---
+objects:
+  - generated: DAFile
+---
+mandatory: True
+code: |
+  tts_task
+  if tts_task.ready():
+    final_screen
+  else:
+    waiting_screen
+---
+code: |
+  tts_task = background_action(
+    'bg_task', 
+    text_to_synthesize=text_to_synthesize, 
+    voice=voice, 
+    speaking_rate=speaking_rate, 
+    pitch=pitch
+  )
+---
+event: bg_task
+code: |
+  audio = get_text_to_speech(
+    action_argument('text_to_synthesize'),
+    action_argument('voice'),
+    action_argument('speaking_rate'),
+    action_argument('pitch'),
+  )
+  generated.initialize(filename="output.mp3")
+  with open(generated.path(), "wb") as out:
+    out.write(audio)
+  background_response()
+---
+event: waiting_screen
+question: |
+  Hang tight.
+  Google is doing its magic.
+subquestion: |
+  This screen will reload every
+  ten seconds until the file
+  is available.
+reload: True
+---
+event: final_screen
+question: |
+  The audio on your text has been generated.
+subquestion: |
+  Download it [here]. Preview it too. Press back if you're not satisfied.
+  
+  [here]: ${generated.url_for(attachment=True)}
+audio: ${generated.path()}
+buttons:
+  - Exit: exit
+  - Restart: restart
+---
+question: |
+  Tell me what would you like Google to voice.
+fields:
+  - no label: text_to_synthesize
+    input type: area
+  - note: |
+      The limit is 5000 characters. (Short paragraphs should be fine)
+---
+question: |
+  Choose the voice that Google will use.
+field: voice
+default: en-US-Wavenet-A
+choices:
+  - en-US-Wavenet-A
+  - en-US-Wavenet-B
+  - en-US-Wavenet-C
+  - en-US-Wavenet-D
+  - en-US-Wavenet-E
+  - en-US-Wavenet-F
+  - en-US-Wavenet-G
+  - en-US-Wavenet-H
+  - en-US-Wavenet-I
+  - en-US-Wavenet-J
+under: |
+  You can preview the voices [here](https://cloud.google.com/text-to-speech/docs/voices).
+---
+question: |
+  Modify the way Google speaks your text.
+subquestion: |
+  You can skip this if you don't need any modifications.
+fields:
+  - Speaking pitch: pitch
+    datatype: range
+    min: -20.0
+    max: 20.0
+    default: 0
+  - note: |
+      20 means increase 20 semitones from the original pitch. 
+      -20 means decrease 20 semitones from the original pitch. 
+  - Speaking rate/speed: speaking_rate
+    datatype: range
+    min: 0.25
+    max: 4.0
+    default: 1.0
+    step: 0.1
+  - note: |
+      1.0 is the normal native speed supported by the specific voice. 
+      2.0 is twice as fast, and 0.5 is half as fast. 
