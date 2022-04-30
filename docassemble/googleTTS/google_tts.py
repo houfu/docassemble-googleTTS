@@ -2,12 +2,10 @@ def get_text_to_speech(text_to_synthesize, voice, speaking_rate, pitch):
     from google.cloud import texttospeech
     import json
     from docassemble.base.util import get_config
-    from oauth2client.service_account import ServiceAccountCredentials
 
-    credential_info = json.loads(get_config('google').get('TTS service account'), strict=False)
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(credential_info)
+    credential_info = json.loads(get_config('google').get('tts service account'), strict=False)
 
-    client = texttospeech.TextToSpeechClient(credentials=creds)
+    client = texttospeech.TextToSpeechClient.from_service_account_info(credential_info)
 
     input_text = texttospeech.SynthesisInput(text=text_to_synthesize)
 
