@@ -16,6 +16,7 @@ objects:
 ---
 mandatory: True
 code: |
+  generated.initialize(filename="output.mp3")
   tts_task
   if tts_task.ready():
     final_screen
@@ -39,9 +40,7 @@ code: |
     action_argument('speaking_rate'),
     action_argument('pitch'),
   )
-  generated.initialize(filename="output.mp3")
-  with open(generated.path(), "wb") as out:
-    out.write(audio)
+  generated.write(audio, binary=True)
   background_response()
 ---
 event: waiting_screen
