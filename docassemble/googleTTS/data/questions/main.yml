@@ -6,7 +6,7 @@ metadata:
   description: |
     This interview produces a sound file based 
     on the text input by the user and other options.
-  revision_date: 2022-04-27
+  revision_date: 2022-05-01
 ---
 modules:
   - .google_tts
@@ -29,7 +29,8 @@ code: |
     text_to_synthesize=text_to_synthesize, 
     voice=voice, 
     speaking_rate=speaking_rate, 
-    pitch=pitch
+    pitch=pitch,
+    file=generated
   )
 ---
 event: bg_task
@@ -40,7 +41,9 @@ code: |
     action_argument('speaking_rate'),
     action_argument('pitch'),
   )
-  generated.write(audio, binary=True)
+  file_output = action_argument('file')
+  file_output.write(audio, binary=True)
+  file_output.commit()
   background_response()
 ---
 event: waiting_screen
@@ -49,24 +52,31 @@ question: |
   Google is doing its magic.
 subquestion: |
   This screen will reload every
-  ten seconds until the file
+  few seconds until the file
   is available.
 reload: True
 ---
 event: final_screen
 question: |
-  The audio on your text has been generated.
+  Download your sound file **[here](${generated.url_for(attachment=True)}).**
 subquestion: |
-  Download it [here]. Preview it too. Press back if you're not satisfied.
+  The audio on your text has been generated.
   
-  [here]: ${generated.url_for(attachment=True)}
-audio: ${generated.path()}
+  You can preview it here too.
+  
+  <audio controls>
+   <source src="${generated.url_for()}" type="audio/mpeg">
+   Your browser does not support playing audio.
+  </audio>
+  
+  Press `Back` above if you want to modify the settings and generate a new file,
+  or click `Restart` below to begin a new request.
 buttons:
   - Exit: exit
   - Restart: restart
 ---
 question: |
-  Tell me what would you like Google to voice.
+  Tell me what text you would like Google to voice.
 fields:
   - no label: text_to_synthesize
     input type: area
