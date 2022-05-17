@@ -14,6 +14,21 @@ modules:
 objects:
   - generated: DAFile
 ---
+imports:
+  - os.path
+---
+mandatory: True
+code: |
+  if get_config('google') is None or 'tts service account' not in get_config('google'):   
+    if get_config('error notification email') is not None:
+      send_email(to=get_config('error notification email'), 
+        subject='docassemble-Google TTS raised an error', 
+        body='You need to set service account credentials in your google configuration.' )
+    else:
+      log('docassemble-Google TTS raised an error -- You need to set service account credentials in your google configuration.')
+  
+    message('Error: No service account for Google TTS', 'Please contact your administrator.')
+---
 mandatory: True
 code: |
   generated.initialize(filename="output.mp3")
@@ -57,6 +72,8 @@ subquestion: |
 reload: True
 ---
 event: final_screen
+need:
+  - file_check
 question: |
   Download your sound file **[here](${generated.url_for(attachment=True)}).**
 subquestion: |
@@ -122,4 +139,17 @@ fields:
     step: 0.1
   - note: |
       1.0 is the normal native speed supported by the specific voice. 
-      2.0 is twice as fast, and 0.5 is half as fast. 
+      2.0 is twice as fast, and 0.5 is half as fast.
+---
+event: file_check
+code: |
+  path = generated.path()
+  if not os.path.exists(path):
+    if get_config('error notification email') is not None:
+      send_email(to=get_config('error notification email'), 
+        subject='docassemble-Google TTS raised an error', 
+        body='No file was saved in this interview.' )
+    else:
+      log('docassemble-Google TTS raised an error -- No audio file was saved in this interview.')
+  
+    message('Error: No audio file was saved', 'We are not sure why. Please contact your administrator.')
